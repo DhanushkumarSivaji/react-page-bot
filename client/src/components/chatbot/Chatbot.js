@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Message from './Message'
 
@@ -17,19 +17,19 @@ function Chatbot() {
       }
     }
 
-      
-    setMessages(messages => [...messages,says])
+
+    setMessages(messages => [...messages, says])
 
     const res = await axios.post('/api/df_text_query', { text: [queryText] });
 
-    for (let msg of res.data.fulfillmentMessages) { 
+    for (let msg of res.data.fulfillmentMessages) {
       says = {
         speaks: 'bot',
         msg: msg
       }
 
 
-      setMessages(messages => [...messages,says])
+      setMessages(messages => [...messages, says])
     }
   };
 
@@ -43,40 +43,48 @@ function Chatbot() {
         msg: msg
       }
 
-      setMessages(messages => [...messages,says])
+      setMessages(messages => [...messages, says])
     }
   };
 
-  useEffect(()=>{
-    df_text_query('Hi')
-  },[])
+  useEffect(() => {
+    df_text_query('Hello How are u')
+  }, [])
 
   const handleInputKeyPress = (e) => {
     if (e.key === 'Enter') {
-        df_text_query(e.target.value);
-        e.target.value = '';
+      df_text_query(e.target.value);
+      e.target.value = '';
     }
-}
+  }
 
   const renderMessages = (returnedMessages) => {
     if (returnedMessages) {
       return returnedMessages.map((message, i) => {
-              return <Message key={i} speaks={message.speaks} text={message.msg.text.text}/>;
-          }
+        return <Message key={i} speaks={message.speaks} text={message.msg.text.text} />;
+      }
       )
-  } else {
+    } else {
       return null;
+    }
   }
-  }
+
+  const AlwaysScrollToBottom = () => {
+    const elementRef = useRef();
+    useEffect(() => elementRef.current.scrollIntoView());
+    return <div ref={elementRef} />;
+  };
 
   return (
     <div className="container">
       <div style={{ height: 400, width: 400, float: 'right' }}>
+        <h2>Chatbot</h2>
         <div id="chatbot" style={{ height: '100%', width: '100%', overflow: 'auto' }}>
-          <h2>Chatbot</h2>
           {renderMessages(messages)}
-          <input type="text" onKeyPress={handleInputKeyPress}/>
+          <AlwaysScrollToBottom />
+
         </div>
+        <input type="text" onKeyPress={handleInputKeyPress} style={{ color: 'white' }} autoFocus />
       </div>
     </div>
   )
