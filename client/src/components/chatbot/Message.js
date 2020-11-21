@@ -1,30 +1,32 @@
 import React from 'react';
-import Avatar from "./img/img_avatar_1.png"
+import Avatar from "./img/dk.jpg"
 
 const Message = (props) => {
     return (
 
         <div className="col s12 m8 offset-m2 l6 offset-l3">
-        {props.speaks==='bot' && <div class="message-group-received">
+        {props.speaks==='bot' && <div className="message-group-received">
         <div>
-          <img src={Avatar} />
+          <img alt="Bot" src={Avatar} />
         </div>
         <div>
-          <div class="message-received">
-            <div class="message-received-text">
+          <div className="message-received">
+            <div className="message-received-text">
               {props.text}
             </div>
           </div>
         </div>
       </div>}
-      {props.speaks==='user' && <div class="message-group-sent">
+      {props.speaks==='user' && <div className="message-group-sent">
         <div>
-          <div class="message-sent">
-            <div class="message-sent-text">
+          <div className="message-sent">
+            <div className="message-sent-text">
             {props.text}
             </div>
+            {/* <div class="message-sent-status">
+              <img src={Avatar} />
+            </div> */}
           </div>
-         
         </div>
       </div>}
         </div>
