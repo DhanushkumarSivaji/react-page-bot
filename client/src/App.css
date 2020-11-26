@@ -1,5 +1,5 @@
 body {
-    font-family: sans-serif;
+    font-family: monospace;
     color: white;
     background: #18191a;
   }
@@ -34,7 +34,7 @@ body {
   }
   
   .message-received {
-    max-width: 75%;
+    max-width: 90%;
     margin: 2px 0;
     display: flex;
   }
@@ -97,3 +97,19 @@ body {
     margin-top: auto;
   }
   
+  .course-list-row{
+    align-items: stretch;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  
+  .cards > img {
+    margin-bottom: .75rem;
+  }
+  
+  .card-texts {
+    font-size: 85%;
+  }
