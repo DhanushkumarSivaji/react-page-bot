@@ -30,11 +30,11 @@ const QuickReplies = (props) => {
             <div>
                 <div className="message-received">
                     <div className="message-received-text">
-                        {props.text &&
-                            props.text.stringValue
+                        {
+                            props?.text?.stringValue
                         }
                         <div style={{margin:'5px 0'}}>
-                        {renderQuickReplies(props.payload)}
+                        {renderQuickReplies(props?.payload)}
                         </div>
                     </div>
                 </div>

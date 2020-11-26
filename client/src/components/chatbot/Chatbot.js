@@ -31,9 +31,9 @@ function Chatbot() {
 
     setMessages(messages => [...messages, says])
 
-    const res = await axios.post('/api/df_text_query', { text: queryText, userID: cookies.get('userID') });
+    const res = await axios.post('/dialogflowroutes/df_text_query', { text: queryText, userID: cookies.get('userID') });
 
-    for (let msg of res.data.fulfillmentMessages) {
+    for (let msg of res?.data?.fulfillmentMessages) {
       says = {
         speaks: 'bot',
         msg: msg
@@ -44,9 +44,9 @@ function Chatbot() {
 
   const df_event_query = async (eventName) => {
 
-    const res = await axios.post('/api/df_event_query', { event: eventName, userID: cookies.get('userID') });
+    const res = await axios.post('/dialogflowroutes/df_event_query', { event: eventName, userID: cookies.get('userID') });
 
-    for (let msg of res.data.fulfillmentMessages) {
+    for (let msg of res?.data?.fulfillmentMessages) {
       let says = {
         speaks: 'bot',
         msg: msg
@@ -63,38 +63,34 @@ function Chatbot() {
   const handleInputKeyPress = async (e) => {
     if (e.key === 'Enter') {
       await resolveAfterXSeconds(1)
-      df_text_query(e.target.value);
+      df_text_query(e?.target?.value);
       e.target.value = '';
     }
   }
 
   const renderCards = (cards) => {
-    return cards.map((card, i) => <Card key={i} payload={card.structValue} />);
+    return cards.map((card, i) => <Card key={i} payload={card?.structValue} />);
   }
 
   const renderOneMessage = (message, i) => {
 
-    if (message.msg && message.msg.text && message.msg.text.text) {
-      return <Message key={i} speaks={message.speaks} text={message.msg.text.text} />;
-    } else if (message.msg && message.msg.payload.fields.cards) { //message.msg.payload.fields.cards.listValue.values
+    if (message?.msg?.text?.text) {
+      return <Message key={i} speaks={message?.speaks} text={message?.msg?.text?.text} />;
+    } else if (message?.msg?.payload?.fields?.cards) { //message.msg.payload.fields.cards.listValue.values
       return <div key={i} style={{ margin: '30px' }}>
         <div>
           <div className="course-list-row">
-            {renderCards(message.msg.payload.fields.cards.listValue.values)}
+            {renderCards(message?.msg?.payload?.fields?.cards?.listValue?.values)}
           </div>
         </div>
       </div>
-    } else if (message.msg &&
-      message.msg.payload &&
-      message.msg.payload.fields &&
-      message.msg.payload.fields.quick_replies
-    ) {
+    } else if (message?.msg?.payload?.fields?.quick_replies) {
       return <QuickReplies
-        text={message.msg.payload.fields.text ? message.msg.payload.fields.text : null}
+        text={(message?.msg?.payload?.fields?.text) ? (message?.msg?.payload?.fields?.text) : null}
         key={i}
         replyClick={handleQuickReplyPayload}
-        speaks={message.speaks}
-        payload={message.msg.payload.fields.quick_replies.listValue.values} />;
+        speaks={message?.speaks}
+        payload={message?.msg?.payload?.fields?.quick_replies?.listValue?.values} />;
     }
   }
 
@@ -113,7 +109,7 @@ function Chatbot() {
 
   const AlwaysScrollToBottom = () => {
     const elementRef = useRef();
-    useEffect(() => elementRef.current.scrollIntoView());
+    useEffect(() => elementRef?.current?.scrollIntoView());
     return <div ref={elementRef} />;
   };
 

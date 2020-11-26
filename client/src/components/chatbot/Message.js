@@ -5,14 +5,14 @@ const Message = (props) => {
     return (
 
         <div className="col s12 m8 offset-m2 l6 offset-l3">
-        {props.speaks==='bot' && <div className="message-group-received">
+        {props?.speaks==='bot' && <div className="message-group-received">
         <div>
           <img alt="Bot" src={Avatar} />
         </div>
         <div>
           <div className="message-received">
             <div className="message-received-text">
-              {props.text}
+              {props?.text}
             </div>
           </div>
         </div>
@@ -21,7 +21,7 @@ const Message = (props) => {
         <div>
           <div className="message-sent">
             <div className="message-sent-text">
-            {props.text}
+            {props?.text}
             </div>
             {/* <div class="message-sent-status">
               <img src={Avatar} />
