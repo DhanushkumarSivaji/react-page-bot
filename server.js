@@ -22,8 +22,19 @@ app.use('/dialogflowroutes', require('./routes/dialogFlowRoutes'));
 app.use('/', require('./routes/fulfillmentRoutes'));
 
 app.get('/',(req,res)=>{
-    res.json({"msg":"Welcome to ChatBot"})
+    res.json({"message":"Welcome to ChatBot"})
 })
+
+if (process.env.NODE_ENV === 'production') {
+    // js and css files
+    app.use(express.static('client/build'));
+
+    // index.html for all page routes
+    const path = require('path');
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+    });
+}
 
 app.listen(PORT,()=>{
     console.log(`Server is running on PORT ${PORT} ...`)

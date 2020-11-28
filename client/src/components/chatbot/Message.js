@@ -4,7 +4,7 @@ import Avatar from "./img/dk.jpg"
 const Message = (props) => {
     return (
 
-        <div className="col s12 m8 offset-m2 l6 offset-l3">
+        <div className="col s12 m8 offset-m2 l6 offset-l3" style={{marginTop:'15px'}}>
         {props?.speaks==='bot' && <div className="message-group-received">
         <div>
           <img alt="Bot" src={Avatar} />

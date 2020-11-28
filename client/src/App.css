@@ -10,8 +10,39 @@ body {
     max-width: 700px;
     margin: 0 auto;
   }
-  
 
+  .page-error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 30vh;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    background: black;
+    font-size: 30px;
+    padding: 5px 0;
+    margin: 5px;
+  }
+
+  .header-text{
+    margin: 5px;
+  }
+  
+  .chatbot-container {
+    height: 400;
+    width: 400;
+    margin-top: 50px;
+  }
+
+  .chatbot{
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+  }
+  
   .message-group-received {
     display: flex;
     width: 100%;

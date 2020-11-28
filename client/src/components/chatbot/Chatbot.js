@@ -5,12 +5,14 @@ import { v4 as uuid } from 'uuid';
 import Message from './Message'
 import Card from './Card';
 import QuickReplies from './QuickReplies';
+import { TROUBLE_REACH_BOT } from '../constants'
 
 const cookies = new Cookies();
 
 function Chatbot() {
 
   const [messages, setMessages] = useState([])
+  const [isOpen, setIsOpen] = useState(true)
 
   useEffect(() => {
     if (cookies.get('userID') === undefined) {
@@ -18,41 +20,56 @@ function Chatbot() {
     }
   }, [])
 
-  const df_text_query = async (queryText) => {
+  const df_text_query = async (text) => {
     let says = {
       speaks: 'user',
       msg: {
         text: {
-          text: queryText
+          text: text
         }
       }
     }
 
 
     setMessages(messages => [...messages, says])
+    try {
+      const res = await axios.post('/dialogflowroutes/df_text_query', { text: text, userID: cookies.get('userID') });
 
-    const res = await axios.post('/dialogflowroutes/df_text_query', { text: queryText, userID: cookies.get('userID') });
-
-    for (let msg of res?.data?.fulfillmentMessages) {
-      says = {
-        speaks: 'bot',
-        msg: msg
+      for (let msg of res?.data?.fulfillmentMessages) {
+        says = {
+          speaks: 'bot',
+          msg: msg
+        }
+        setMessages(messages => [...messages, says])
       }
+    } catch (e) {
+      says = TROUBLE_REACH_BOT
       setMessages(messages => [...messages, says])
+      setTimeout(function () {
+        setIsOpen(false)
+      }, 3000);
     }
   };
 
   const df_event_query = async (eventName) => {
+    try {
+      const res = await axios.post('/dialogflowroutes/df_event_query', { event: eventName, userID: cookies.get('userID') });
 
-    const res = await axios.post('/dialogflowroutes/df_event_query', { event: eventName, userID: cookies.get('userID') });
+      for (let msg of res?.data?.fulfillmentMessages) {
+        let says = {
+          speaks: 'bot',
+          msg: msg
+        }
 
-    for (let msg of res?.data?.fulfillmentMessages) {
-      let says = {
-        speaks: 'bot',
-        msg: msg
+        setMessages(messages => [...messages, says])
+
       }
-
+    } catch (e) {
+      let says = TROUBLE_REACH_BOT
       setMessages(messages => [...messages, says])
+      setTimeout(function () {
+        setIsOpen(false)
+      }, 3000);
     }
   };
 
@@ -60,9 +77,8 @@ function Chatbot() {
     df_event_query('WELCOME_SHOP')
   }, [])
 
-  const handleInputKeyPress = async (e) => {
+  const handleInputKeyPress = (e) => {
     if (e.key === 'Enter') {
-      await resolveAfterXSeconds(1)
       df_text_query(e?.target?.value);
       e.target.value = '';
     }
@@ -115,11 +131,11 @@ function Chatbot() {
 
   const resolveAfterXSeconds = (x) => {
     return new Promise(resolve => {
-        setTimeout(() => {
-            resolve(x);
-        }, x * 1000);
+      setTimeout(() => {
+        resolve(x);
+      }, x * 1000);
     })
-}
+  }
 
   const handleQuickReplyPayload = async (event, payload, text) => {
     event.preventDefault();
@@ -144,15 +160,19 @@ function Chatbot() {
 
 
   return (
-    <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ height: 400, width: 400 }}>
-        <h3 style={{ textAlign: 'center', display: 'block', background: 'black', fontSize: '30px', padding: '10px 0' }}>Chatbot</h3>
-        <div id="chatbot" style={{ height: '100%', width: '100%', overflow: 'auto' }}>
+    <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+      {isOpen && <div style={{ height: 400, width: 400, marginTop: '50px' }}>
+        <div className="header">
+          <h3 style={{ margin: '5px' }}>Chatbot</h3>
+          <p style={{ margin: '5px', cursor: 'pointer' }} onClick={() => setIsOpen(!isOpen)}>x</p>
+        </div>
+        <div id="chatbot" className="chatbot">
           {renderMessages(messages)}
           <AlwaysScrollToBottom />
         </div>
         <input type="text" placeholder="Type a message..." onKeyPress={handleInputKeyPress} style={{ color: 'white' }} autoFocus />
-      </div>
+      </div>}
+      { !isOpen ? <button className="waves-effect waves-light btn-large black" style={{ fontSize: '24px',cursor:'pointer',textTransform:'capitalize' }} onClick={() => setIsOpen(!isOpen)}>chat <i className='far fa-comment-dots'></i></button> : null}
     </div>
   )
 }
