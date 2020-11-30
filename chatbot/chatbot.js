@@ -71,7 +71,6 @@ module.exports = {
     saveRegistration: async function (fields) {
         const registration = new Registration({
             name: fields.name.structValue.fields.name.stringValue,
-            address: fields.address.stringValue,
             phone: fields.phone.stringValue,
             email: fields.email.stringValue,
             dateSent: Date.now()
