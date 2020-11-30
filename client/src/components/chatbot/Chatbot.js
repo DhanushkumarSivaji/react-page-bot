@@ -9,10 +9,13 @@ import { TROUBLE_REACH_BOT } from '../constants'
 
 const cookies = new Cookies();
 
+
 function Chatbot() {
 
   const [messages, setMessages] = useState([])
   const [isOpen, setIsOpen] = useState(true)
+  const [clientToken, setClientToken] = useState(false)
+  const [regenerateToken, setregenerateToken] = useState(0)
 
   useEffect(() => {
     if (cookies.get('userID') === undefined) {
@@ -29,49 +32,81 @@ function Chatbot() {
         }
       }
     }
-
-
     setMessages(messages => [...messages, says])
-    try {
-      const res = await axios.post('/dialogflowroutes/df_text_query', { text: text, userID: cookies.get('userID') });
-
-      for (let msg of res?.data?.fulfillmentMessages) {
-        says = {
-          speaks: 'bot',
-          msg: msg
-        }
-        setMessages(messages => [...messages, says])
+    const request = {
+      queryInput: {
+        text: {
+          text: text,
+          languageCode: 'en-US',
+        },
       }
-    } catch (e) {
-      says = TROUBLE_REACH_BOT
-      setMessages(messages => [...messages, says])
-      setTimeout(function () {
-        setIsOpen(false)
-      }, 3000);
-    }
+    };
+    df_client_call(request);
   };
 
   const df_event_query = async (eventName) => {
+    const request = {
+      queryInput: {
+        event: {
+          name: eventName,
+          languageCode: 'en-US',
+        },
+      }
+    };
+
+    df_client_call(request);
+  };
+
+  const df_client_call = async (request) => {
     try {
-      const res = await axios.post('/dialogflowroutes/df_event_query', { event: eventName, userID: cookies.get('userID') });
 
-      for (let msg of res?.data?.fulfillmentMessages) {
-        let says = {
-          speaks: 'bot',
-          msg: msg
+      if (clientToken === false) {
+        const res = await axios.get('/dialogflowroutes/get_client_token');
+        setClientToken(res?.data?.token);
+      }
+
+      var config = {
+        headers: {
+          'Authorization': "Bearer " + process.env.REACT_APP_DIALOGFLOW_CLIENT_KEY,
+          'Content-Type': 'application/json; charset=utf-8'
         }
+      };
 
-        setMessages(messages => [...messages, says])
 
+      const res = await axios.post(
+        'https://dialogflow.googleapis.com/v2/projects/' + process.env.REACT_APP_GOOGLE_PROJECT_ID +
+        '/agent/sessions/' + process.env.REACT_APP_DF_SESSION_ID + cookies.get('userID') + ':detectIntent',
+        request,
+        config
+      );
+
+      let says = {};
+
+      if (res?.data?.queryResult?.fulfillmentMessages) {
+        for (let msg of res?.data?.queryResult?.fulfillmentMessages) {
+          says = {
+            speaks: 'bot',
+            msg: msg
+          }
+          setMessages(messages => [...messages, says])
+        }
       }
     } catch (e) {
-      let says = TROUBLE_REACH_BOT
-      setMessages(messages => [...messages, says])
-      setTimeout(function () {
-        setIsOpen(false)
-      }, 3000);
+      if (e?.response?.status === 401 && regenerateToken < 1) {
+        setClientToken(false);
+        setregenerateToken(1)
+        // df_client_call(request);
+      }
+      else {
+        let says = TROUBLE_REACH_BOT
+        setMessages(messages => [...messages, says])
+        setTimeout(function () {
+          setIsOpen(false)
+        }, 3000);
+      }
     }
-  };
+
+  }
 
   useEffect(() => {
     df_event_query('WELCOME_SHOP')
@@ -85,28 +120,28 @@ function Chatbot() {
   }
 
   const renderCards = (cards) => {
-    return cards.map((card, i) => <Card key={i} payload={card?.structValue} />);
+    return cards.map((card, i) => <Card key={i} payload={card} />);
   }
 
   const renderOneMessage = (message, i) => {
 
     if (message?.msg?.text?.text) {
       return <Message key={i} speaks={message?.speaks} text={message?.msg?.text?.text} />;
-    } else if (message?.msg?.payload?.fields?.cards) { //message.msg.payload.fields.cards.listValue.values
+    } else if (message?.msg?.payload?.cards) { //message.msg.payload.fields.cards.listValue.values
       return <div key={i} style={{ margin: '30px' }}>
         <div>
           <div className="course-list-row">
-            {renderCards(message?.msg?.payload?.fields?.cards?.listValue?.values)}
+            {renderCards(message?.msg?.payload?.cards)}
           </div>
         </div>
       </div>
-    } else if (message?.msg?.payload?.fields?.quick_replies) {
+    } else if (message?.msg?.payload?.quick_replies) {
       return <QuickReplies
-        text={(message?.msg?.payload?.fields?.text) ? (message?.msg?.payload?.fields?.text) : null}
+        text={(message?.msg?.payload?.text) ? (message?.msg?.payload?.text) : null}
         key={i}
         replyClick={handleQuickReplyPayload}
         speaks={message?.speaks}
-        payload={message?.msg?.payload?.fields?.quick_replies?.listValue?.values} />;
+        payload={message?.msg?.payload?.quick_replies} />;
     }
   }
 
@@ -125,7 +160,7 @@ function Chatbot() {
 
   const AlwaysScrollToBottom = () => {
     const elementRef = useRef();
-    useEffect(() => elementRef?.current?.scrollIntoView());
+    useEffect(() => elementRef?.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" }));
     return <div ref={elementRef} />;
   };
 
@@ -172,7 +207,7 @@ function Chatbot() {
         </div>
         <input type="text" placeholder="Type a message..." onKeyPress={handleInputKeyPress} style={{ color: 'white' }} autoFocus />
       </div>}
-      { !isOpen ? <button className="waves-effect waves-light btn-large black" style={{ fontSize: '24px',cursor:'pointer',textTransform:'capitalize' }} onClick={() => setIsOpen(!isOpen)}>chat <i className='far fa-comment-dots'></i></button> : null}
+      { !isOpen ? <button className="waves-effect waves-light btn-large black" style={{ fontSize: '34px', cursor: 'pointer', textTransform: 'capitalize',fontFamily:'monospace' }} onClick={() => setIsOpen(!isOpen)}>chat <i className='far fa-comment-dots'></i></button> : null}
     </div>
   )
 }

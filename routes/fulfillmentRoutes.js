@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { WebhookClient } = require('dialogflow-fulfillment');
 const mongoose = require('mongoose');
+const { json } = require('express');
 const Demand = mongoose.model('demand');
 const Coupon = mongoose.model('coupon');
+const Registration = mongoose.model('registration');
 
 router.post('/', async (req, res) => {
     try {
@@ -16,6 +18,20 @@ router.post('/', async (req, res) => {
         function fallback(agent) {
             agent.add(`I didn't understand`);
             agent.add(`I'm sorry, can you try again?`);
+        }
+
+        async function registration(agent) {
+            const registration = new Registration({
+                name: agent.parameters.name.name,
+                phone: agent.parameters.phone,
+                email: agent.parameters.email,
+                dateSent: Date.now()
+            });
+            try{
+                let reg = await registration.save();                
+            } catch (err){
+                console.log(err);
+            }
         }
 
         async function learn(agent) {
@@ -42,6 +58,7 @@ router.post('/', async (req, res) => {
         let intentMap = new Map();
         intentMap.set('snoopy', snoopy);
         intentMap.set('learn courses', learn);
+        intentMap.set('recommend courses - yes', registration);
         intentMap.set('Default Fallback Intent', fallback);
 
         agent.handleRequest(intentMap);

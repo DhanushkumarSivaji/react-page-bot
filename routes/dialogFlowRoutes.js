@@ -24,6 +24,11 @@ router.post('/df_event_query', async (req, res) => {
 }
 );
 
+router.get('/get_client_token', async (req, res) => {
+    let token = await chatbot.getToken();
+    res.send({token});
+})
+
 module.exports = router;
 
 

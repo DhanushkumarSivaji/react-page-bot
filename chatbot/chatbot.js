@@ -2,6 +2,7 @@
 
 const dialogflow = require('dialogflow');
 const mongoose = require('mongoose');
+const googleAuth = require('google-oauth-jwt');
 const config = require('../config/keys');
 const structJson = require('./structJson');
 
@@ -16,6 +17,21 @@ const credentials = {
 const sessionClient = new dialogflow.SessionsClient({ projectID, credentials });
 
 module.exports = {
+    
+    getToken: async function() {
+        return new Promise((resolve) => {
+            googleAuth.authenticate(
+                {
+                    email: config.googleClientEmail,
+                    key: config.googlePrivateKey,
+                    scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+                },
+                (err, token) => {
+                    resolve(token);
+                },
+            );
+        });
+    },
 
     textQuery: async function (text, userID, parameters = {}) {
         let self = module.exports;
@@ -71,7 +87,6 @@ module.exports = {
     saveRegistration: async function (fields) {
         const registration = new Registration({
             name: fields.name.structValue.fields.name.stringValue,
-            address: fields.address.stringValue,
             phone: fields.phone.stringValue,
             email: fields.email.stringValue,
             dateSent: Date.now()

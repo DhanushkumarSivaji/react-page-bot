@@ -31,10 +31,10 @@ const QuickReplies = (props) => {
                 <div className="message-received">
                     <div className="message-received-text">
                         {
-                            props?.text?.stringValue
+                            props?.text
                         }
-                        <div style={{margin:'5px 0'}}>
-                        {renderQuickReplies(props?.payload)}
+                        <div style={{ margin: '5px 0' }}>
+                            {renderQuickReplies(props?.payload)}
                         </div>
                     </div>
                 </div>
